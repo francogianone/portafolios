@@ -58,7 +58,20 @@ const content = {
     projectsTitle: "Selected Projects",
     techTitle: "Tech Stack",
     contactTitle: "Get In Touch",
+    contactSubtitle: "Have an idea or project? Let's talk.",
+    connectTitle: "Let's Connect",
     toggle: "ES",
+    formFields: {
+        name: "Name",
+        email: "Email",
+        message: "Message..."
+    },
+    buttonLabels: {
+        idle: "Send",
+        sending: "Sending...",
+        success: "Sent Successfully!",
+        error: "Failed to send"
+    },
     projects: [
       {
         id: 3,
@@ -66,11 +79,7 @@ const content = {
         desc: "Comprehensive management system. Real-time dashboard, AFIP invoicing, Mercado Pago integration.",
         tags: ["React", "Node.js", "MySQL"],
         highlight: true,
-        images: [
-            erpStock,
-            erpDashboard,
-            erpFactura
-        ]
+        images: [erpStock, erpDashboard, erpFactura]
       },
       {
         id: 1,
@@ -78,11 +87,7 @@ const content = {
         desc: "Full cart management, stock logic, data persistence, and advanced filtering.",
         tags: ["React", "State Mgmt", "CSS"],
         highlight: false,
-        images: [
-            ecomHome, 
-            ecomCart, 
-            ecomDetail
-        ]
+        images: [ecomHome, ecomCart, ecomDetail]
       },
       {
         id: 2,
@@ -90,11 +95,7 @@ const content = {
         desc: "Responsive landing pages designed to maximize user engagement.",
         tags: ["HTML/CSS", "UI/UX", "Responsive"],
         highlight: false,
-        images: [
-            landHero, 
-            landFeature, 
-            landMobile
-        ]
+        images: [landHero, landFeature, landMobile]
       },
       {
         id: 4,
@@ -102,13 +103,7 @@ const content = {
         desc: "Desktop logistics management. Physical location control, ACID transactions, and full traceability.",
         tags: ["Java", "Swing", "MySQL"],
         highlight: false,
-        images: [
-            javaMenu,
-            javaHistorial,
-            javaGestion,
-            javaProductos,
-            javaUbicaciones
-        ]
+        images: [javaMenu, javaHistorial, javaGestion, javaProductos, javaUbicaciones]
       }
     ]
   },
@@ -120,7 +115,20 @@ const content = {
     projectsTitle: "Proyectos Destacados",
     techTitle: "Tecnologías",
     contactTitle: "Contáctame",
+    contactSubtitle: "¿Tienes una idea o proyecto? Hablemos.",
+    connectTitle: "Conectemos",
     toggle: "EN",
+    formFields: {
+        name: "Nombre",
+        email: "Email",
+        message: "Mensaje..."
+    },
+    buttonLabels: {
+        idle: "Enviar",
+        sending: "Enviando...",
+        success: "¡Enviado con Éxito!",
+        error: "Error al enviar"
+    },
     projects: [
       {
         id: 3,
@@ -128,11 +136,7 @@ const content = {
         desc: "Sistema de gestión integral. Dashboard en tiempo real, facturación AFIP, Mercado Pago.",
         tags: ["React", "Node.js", "MySQL"],
         highlight: true,
-        images: [
-            erpStock,
-            erpDashboard,
-            erpFactura
-        ]
+        images: [erpStock, erpDashboard, erpFactura]
       },
       {
         id: 1,
@@ -140,11 +144,7 @@ const content = {
         desc: "Gestión completa de carrito, lógica de stock, persistencia y filtrado avanzado.",
         tags: ["React", "State Mgmt", "CSS"],
         highlight: false,
-        images: [
-            ecomHome,
-            ecomCart,
-            ecomDetail
-        ]
+        images: [ecomHome, ecomCart, ecomDetail]
       },
       {
         id: 2,
@@ -152,11 +152,7 @@ const content = {
         desc: "Páginas de aterrizaje responsivas diseñadas para maximizar el impacto visual.",
         tags: ["HTML/CSS", "UI/UX", "Responsive"],
         highlight: false,
-        images: [
-            landHero,
-            landFeature,
-            landMobile
-        ]
+        images: [landHero, landFeature, landMobile]
       },
       {
         id: 4, 
@@ -164,15 +160,8 @@ const content = {
         desc: "Gestión logística de almacenes. Control de ubicaciones físicas, transacciones ACID y trazabilidad.",
         tags: ["Java", "Swing", "MySQL"],
         highlight: false, 
-        images: [
-            javaMenu,
-            javaHistorial,
-            javaGestion,
-            javaProductos,
-            javaUbicaciones  
-        ]
+        images: [javaMenu, javaHistorial, javaGestion, javaProductos, javaUbicaciones]
       }
-      
     ]
   }
 };
@@ -229,7 +218,7 @@ const ProjectCard = ({ project }) => {
 
 
 function App() {
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState('es');
   const [showScrollArrow, setShowScrollArrow] = useState(true);
   const t = content[lang];
   const scrollRef = useRef(null);
@@ -361,21 +350,21 @@ function App() {
           <div className="grid md:grid-cols-2 gap-12">
             
             <form ref={form} onSubmit={sendEmail} className="space-y-4">
-              <p className="text-gray-400 mb-6">¿Tienes una idea o proyecto? Hablemos.</p>
+              <p className="text-gray-400 mb-6">{t.contactSubtitle}</p>
               
               <div className="relative">
                 <User className="absolute left-4 top-3 text-gray-500" size={20} />
-                <input name="user_name" type="text" required placeholder="Nombre" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition" />
+                <input name="user_name" type="text" required placeholder={t.formFields.name} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition" />
               </div>
               
               <div className="relative">
                 <Mail className="absolute left-4 top-3 text-gray-500" size={20} />
-                <input name="user_email" type="email" required placeholder="Email" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition" />
+                <input name="user_email" type="email" required placeholder={t.formFields.email} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition" />
               </div>
               
               <div className="relative">
                 <MessageSquare className="absolute left-4 top-3 text-gray-500" size={20} />
-                <textarea name="message" required rows="4" placeholder="Mensaje..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition resize-none"></textarea>
+                <textarea name="message" required rows="4" placeholder={t.formFields.message} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-neon-blue focus:ring-1 focus:ring-neon-blue transition resize-none"></textarea>
               </div>
 
               <button 
@@ -388,15 +377,15 @@ function App() {
                     ${buttonState === 'error' ? 'bg-red-500 text-white' : ''}
                 `}
               >
-                {buttonState === 'idle' && <><Send size={18} /> Enviar</>}
-                {buttonState === 'sending' && "Enviando..."}
-                {buttonState === 'success' && "¡Enviado con Éxito!"}
-                {buttonState === 'error' && "Error al enviar"}
+                {buttonState === 'idle' && <><Send size={18} /> {t.buttonLabels.idle}</>}
+                {buttonState === 'sending' && t.buttonLabels.sending}
+                {buttonState === 'success' && t.buttonLabels.success}
+                {buttonState === 'error' && t.buttonLabels.error}
               </button>
             </form>
 
             <div className="flex flex-col justify-center space-y-6 p-8 bg-white/5 rounded-3xl border border-white/5">
-              <h4 className="text-xl font-bold text-white mb-2">Conectemos</h4>
+              <h4 className="text-xl font-bold text-white mb-2">{t.connectTitle}</h4>
               <div className="flex flex-col gap-4 w-full">
                 
                 <a href="https://wa.me/5493442478528?text=Hola%20Franco,%20vi%20tu%20portafolio%20y%20me%20gustaría%20contactarte." target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-400 hover:text-white transition group bg-black/20 p-4 rounded-xl border border-transparent hover:border-green-500/50">
