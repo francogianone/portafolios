@@ -393,9 +393,9 @@ function App() {
                   <span className="font-mono">WhatsApp</span>
                 </a>
 
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-400 hover:text-white transition group bg-black/20 p-4 rounded-xl border border-transparent hover:border-white/10"><Linkedin className="text-neon-blue group-hover:scale-110 transition" size={24} /><span className="font-mono">LinkedIn</span></a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-400 hover:text-white transition group bg-black/20 p-4 rounded-xl border border-transparent hover:border-white/10"><Instagram className="text-neon-blue group-hover:scale-110 transition" size={24} /><span className="font-mono">Instagram</span></a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-400 hover:text-white transition group bg-black/20 p-4 rounded-xl border border-transparent hover:border-white/10"><Github className="text-neon-blue group-hover:scale-110 transition" size={24} /><span className="font-mono">GitHub</span></a>
+                <a href="https://www.linkedin.com/in/franco-gianone-02527a206/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-400 hover:text-white transition group bg-black/20 p-4 rounded-xl border border-transparent hover:border-white/10"><Linkedin className="text-neon-blue group-hover:scale-110 transition" size={24} /><span className="font-mono">LinkedIn</span></a>
+                <a href="https://www.instagram.com/francogianone/?hl=es-la" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-400 hover:text-white transition group bg-black/20 p-4 rounded-xl border border-transparent hover:border-white/10"><Instagram className="text-neon-blue group-hover:scale-110 transition" size={24} /><span className="font-mono">Instagram</span></a>
+                <a href="https://github.com/francogianone" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-gray-400 hover:text-white transition group bg-black/20 p-4 rounded-xl border border-transparent hover:border-white/10"><Github className="text-neon-blue group-hover:scale-110 transition" size={24} /><span className="font-mono">GitHub</span></a>
               </div>
             </div>
           </div>
