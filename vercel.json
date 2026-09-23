@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/turin-demo", "destination": "https://turinreciclados.francogianone.com.ar/turin-demo/" },
+    { "source": "/turin-demo/:path*", "destination": "https://turinreciclados.francogianone.com.ar/turin-demo/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
