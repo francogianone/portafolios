@@ -6,5 +6,7 @@
     { "source": "/dc-demo/:path*", "destination": "https://dcdigital.francogianone.com.ar/dc-demo/:path*" },
     { "source": "/ecommerce-libros", "destination": "https://libros.francogianone.com.ar/ecommerce-libros/" },
     { "source": "/ecommerce-libros/:path*", "destination": "https://libros.francogianone.com.ar/ecommerce-libros/:path*" }
+    { "source": "/ecommerce-cellshop", "destination": "https://e-commerce-rosy-seven-88.vercel.app/" },
+    { "source": "/ecommerce-cellshop/:path*", "destination": "https://e-commerce-rosy-seven-88.vercel.app/:path*" }
   ]
 }
