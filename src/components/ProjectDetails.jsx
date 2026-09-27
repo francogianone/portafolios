@@ -78,9 +78,9 @@ const projectsExtendedData = {
       ],
       stack: ["React", "Electron", "Node.js (Express)", "MySQL", "AFIP Web Services", "Mercado Pago API", "Google Drive API"],
       images: [erpMain, erpDash, erpOrders, erpAfip],
-      links: { github: "https://github.com/francogianone/sistema-gestion-grafica/", demo: "https://francogianone.com.ar/dc-demo" }
+      links: { demo: "https://francogianone.com.ar/dc-demo" }
     },
-    4: { 
+    4: {
       title: "Sistema de Gestión de Almacenes (WMS)",
       fullDesc: "Aplicación de escritorio robusta desarrollada en Java para la logística de depósitos. A diferencia de un inventario simple, este sistema implementa un control estricto de restricciones físicas y lógicas de negocio. Utiliza un mapeo jerárquico de ubicaciones (Zona > Nave > Estantería > Nivel) y valida en tiempo real la capacidad de carga antes de autorizar cualquier ingreso. Su arquitectura asegura la consistencia de los datos mediante transacciones atómicas, evitando errores de stock durante operaciones críticas como transformaciones o movimientos masivos.",
       features: [
@@ -122,7 +122,7 @@ const projectsExtendedData = {
       ],
       stack: ["React 19", "Vite", "Node.js + Express", "MongoDB + Mongoose", "JWT + Bcrypt", "Nodemailer + Brevo SMTP", "Mercado Pago", "CSS3"],
       images: [librosPortada, librosCatalogo, librosHome, librosCarrito, librosMp, librosSmtp],
-      links: { github: "https://github.com/francogianone/programacion4", demo: "https://francogianone.com.ar/ecommerce-libros" }
+      links: { demo: "https://francogianone.com.ar/ecommerce-libros" }
     }
   },
   en: {
@@ -164,9 +164,9 @@ const projectsExtendedData = {
       ],
       stack: ["React", "Electron", "Node.js (Express)", "MySQL", "AFIP Web Services", "Mercado Pago API", "Google Drive API"],
       images: [erpMain, erpDash, erpOrders, erpAfip],
-      links: { github: "https://github.com/francogianone/sistema-gestion-grafica/", demo: "https://francogianone.com.ar/dc-demo" }
+      links: { demo: "https://francogianone.com.ar/dc-demo" }
     },
-    4: { 
+    4: {
       title: "WMS Logistics System",
       fullDesc: "Robust desktop application developed in Java for warehouse logistics. Unlike simple inventory software, this system implements strict physical constraints and business logic control. It uses a hierarchical location mapping (Zone > Aisle > Rack > Level) and validates load capacity in real-time before authorizing any entry. Its architecture ensures data consistency through atomic transactions, preventing stock errors during critical operations like transformations or bulk movements.",
       features: [
@@ -208,7 +208,7 @@ const projectsExtendedData = {
       ],
       stack: ["React 19", "Vite", "Node.js + Express", "MongoDB + Mongoose", "JWT + Bcrypt", "Nodemailer + Brevo SMTP", "Mercado Pago", "CSS3"],
       images: [librosPortada, librosCatalogo, librosHome, librosCarrito, librosMp, librosSmtp],
-      links: { github: "https://github.com/francogianone/programacion4", demo: "https://francogianone.com.ar/ecommerce-libros" }
+      links: { demo: "https://francogianone.com.ar/ecommerce-libros" }
     }
   }
 };
