@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Github, ExternalLink } from 'lucide-react';
+import { getInitialLang, saveLang } from '../language';
 
 
 import erpMain from '../assets/erp-stock.png';
@@ -13,15 +14,28 @@ import ecomMain from '../assets/ecom-home.png';
 import ecomCart from '../assets/ecom-cart.png';
 import ecomDetail from '../assets/ecom-detail.png';
 
-import landHero from '../assets/landing-hero.png';
-import landAbout from '../assets/landing-feature.png';
-import land from '../assets/landing-mobile.png';
+import landHero from '../assets/landing-hero.jpg';
+import landAbout from '../assets/landing-feature.jpg';
+import land from '../assets/landing-mobile.jpg';
 
 import javaInicio from '../assets/java-inicio.png';
 import javaHist from '../assets/java-historial.png';
 import javaGest from '../assets/java-gestion.png';
 import javaProd from '../assets/java-productos.png';
 import javaUbi from '../assets/java-ubicaciones.png';
+
+import turinLogin from '../assets/turin-login.png';
+import turinPesada from '../assets/turin-pesada.jpg';
+import turinCaja from '../assets/turin-caja.jpg';
+import turinEstadistica from '../assets/turin-estadisticas.jpg';
+
+import librosPortada from '../assets/libros-portada.jpg';
+import librosCatalogo from '../assets/libros-catalogo.jpg';
+import librosHome from '../assets/libros-home.jpg';
+import librosCarrito from '../assets/libros-carrito.jpg';
+import librosMp from '../assets/libros-mp.jpg';
+import librosSmtp from '../assets/libros-smtp.jpg';
+
 
 
 const projectsExtendedData = {
@@ -37,7 +51,7 @@ const projectsExtendedData = {
       ],
       stack: ["JavaScript (ES6 Modules)", "Fetch API", "LocalStorage", "HTML5 / CSS3", "JSON Data"],
       images: [ecomMain, ecomCart, ecomDetail],
-      links: { github: "https://github.com/francogianone/e-commerce", demo: "https://e-commerce-rosy-seven-88.vercel.app/" }
+      links: { github: "https://github.com/francogianone/e-commerce/", demo: "https://francogianone.com.ar/ecommerce-cellshop/" }
     },
     2: { 
       title: "Landing Page Institucional",
@@ -64,7 +78,7 @@ const projectsExtendedData = {
       ],
       stack: ["React", "Electron", "Node.js (Express)", "MySQL", "AFIP Web Services", "Mercado Pago API", "Google Drive API"],
       images: [erpMain, erpDash, erpOrders, erpAfip],
-      links: { github: "https://github.com/francogianone/sistema-gestion-grafica/", demo: "https://sistema-gestion-grafica.vercel.app/" }
+      links: { github: "https://github.com/francogianone/sistema-gestion-grafica/", demo: "https://francogianone.com.ar/dc-demo" }
     },
     4: { 
       title: "Sistema de Gestión de Almacenes (WMS)",
@@ -79,6 +93,36 @@ const projectsExtendedData = {
       stack: ["Java SE", "Swing UI", "MySQL", "JDBC"],
       images: [javaInicio, javaHist, javaGest, javaProd, javaUbi],
       links: { github: "https://github.com/francogianone/sistema-wms-java", demo: "https://www.youtube.com/watch?v=5_aNNMltbLM" }
+    },
+    5: {
+      title: "Sistema de Gestión — Turin Reciclados",
+      fullDesc: "Sistema integral de gestión para una empresa de reciclado multi-sede, construido como monorepo con tres capas: una aplicación de escritorio Windows (Electron) que funciona como cliente, un backend NestJS que corre como proceso independiente gestionado con PM2 en los servidores de cada sede, y una SPA en React + Vite. Cada sede cuenta con su propia base PostgreSQL, y todas se conectan entre sí mediante VPN Tailscale, permitiendo elegir en el login entre el servidor local o remoto. El sistema cubre todo el ciclo operativo del negocio: compra de materiales, pesaje con balanzas conectadas por puerto serie, clientes, tesororería, agenda y estadísticas en tiempo real.",
+      features: [
+          "Arquitectura Multi-Sede: Una base de datos PostgreSQL por sede, interconectadas vía VPN Tailscale, con selección de servidor local o remoto desde el login.",
+          "Integración con Balanzas: Comunicación en tiempo real con balanzas industriales por puerto serie (SerialPort), transmitiendo el pesaje directamente al sistema vía Socket.IO.",
+          "Impresión de Tickets Directa: Generación de tickets como imágenes (PNG.js) e impresión RAW sin drivers desde Electron, tanto local como en el servidor de sede.",
+          "Backend Independiente con PM2: El API NestJS corre fuera de Electron como servicio en Windows, con scripts de despliegue automatizado por sede.",
+          "Estadísticas y Reportes: Dashboards con gráficos (Recharts) y exportación de reportes a Excel (ExcelJS).",
+          "CI/CD Completo: Pipeline de GitHub Actions que construye y publica el instalador Windows (.exe NSIS) con cada push a main."
+      ],
+      stack: ["Electron 41", "NestJS 11", "React 19", "Vite 8", "TypeScript", "PostgreSQL", "TypeORM", "Socket.IO", "Tailwind CSS 4", "SerialPort", "PM2", "GitHub Actions"],
+      images: [turinLogin, turinPesada, turinCaja, turinEstadistica],
+      links: { demo: "https://francogianone.com.ar/turin-demo" }
+    },
+    6: {
+      title: "Tienda de Libros — E-Commerce Full Stack",
+      fullDesc: "Trabajo final: e-commerce de libros full stack (MERN). El frontend está construido con React 19 + Vite y CSS vanilla, mientras que el backend es un API REST en Node.js + Express con MongoDB (Mongoose). Incluye catálogo de libros por categorías con búsqueda y filtros, carrito de compras global persistente con checkout de Mercado Pago, autenticación JWT con recuperación de contraseña por email vía SMTP de Brevo, favoritos por usuario, suscripciones pagas con webhook de confirmación y un panel de administración con CRUD de productos y permisos por rol.",
+      features: [
+          "Catálogo por categorías: novedades, más vendidos, clásicos, arte, negocios, ciencia ficción, tango y cómics, servidos desde MongoDB con búsqueda y filtrado en la home.",
+          "Carrito global con Context de React: agregar/quitar productos, ajustar cantidades, cálculo de subtotales, descuento y total, con persistencia en localStorage.",
+          "Checkout con Mercado Pago: creación de preference desde el drawer del carrito y redirección al flujo de pago.",
+          "Autenticación JWT + bcrypt: registro, login, sesión persistente en localStorage y recuperación de contraseña por email con Nodemailer sobre SMTP de Brevo.",
+          "Favoritos y suscripciones: favoritos por usuario persistidos en el backend y planes de suscripción con pago y webhook de confirmación.",
+          "Panel de administración con roles: CRUD completo de libros para usuarios isAdmin y validación de permisos (isAdmin / isEmployee)."
+      ],
+      stack: ["React 19", "Vite", "Node.js + Express", "MongoDB + Mongoose", "JWT + Bcrypt", "Nodemailer + Brevo SMTP", "Mercado Pago", "CSS3"],
+      images: [librosPortada, librosCatalogo, librosHome, librosCarrito, librosMp, librosSmtp],
+      links: { github: "https://github.com/francogianone/programacion4", demo: "https://francogianone.com.ar/ecommerce-libros" }
     }
   },
   en: {
@@ -93,7 +137,7 @@ const projectsExtendedData = {
       ],
       stack: ["JavaScript (ES6 Modules)", "Fetch API", "LocalStorage", "HTML5 / CSS3", "JSON Data"],
       images: [ecomMain, ecomCart, ecomDetail],
-      links: { github: "https://github.com/francogianone/e-commerce", demo: "https://e-commerce-rosy-seven-88.vercel.app/" }
+      links: { github: "https://github.com/francogianone/e-commerce/", demo: "https://francogianone.com.ar/ecommerce-cellshop/" }
     },
     2: { 
       title: "Institutional Landing Page",
@@ -120,7 +164,7 @@ const projectsExtendedData = {
       ],
       stack: ["React", "Electron", "Node.js (Express)", "MySQL", "AFIP Web Services", "Mercado Pago API", "Google Drive API"],
       images: [erpMain, erpDash, erpOrders, erpAfip],
-      links: { github: "https://github.com/francogianone/sistema-gestion-grafica/", demo: "https://sistema-gestion-grafica.vercel.app/" }
+      links: { github: "https://github.com/francogianone/sistema-gestion-grafica/", demo: "https://francogianone.com.ar/dc-demo" }
     },
     4: { 
       title: "WMS Logistics System",
@@ -135,6 +179,36 @@ const projectsExtendedData = {
       stack: ["Java SE", "Swing UI", "MySQL", "JDBC"],
       images: [javaInicio, javaHist, javaGest, javaProd, javaUbi],
       links: { github: "https://github.com/francogianone/sistema-wms-java", demo: "https://www.youtube.com/watch?v=5_aNNMltbLM" }
+    },
+    5: {
+      title: "Management System — Turin Reciclados",
+      fullDesc: "Comprehensive management system for a multi-branch recycling company, built as a three-layer monorepo: a Windows desktop application (Electron) acting as the client, a NestJS backend running as an independent process managed with PM2 on each branch's server, and a React + Vite SPA. Each branch has its own PostgreSQL database, all interconnected via Tailscale VPN, allowing server selection (local or remote) at login. The system covers the full business cycle: material purchasing, weighing with serial-port connected scales, clients, treasury, agenda, and real-time statistics.",
+      features: [
+          "Multi-Branch Architecture: One PostgreSQL database per branch, interconnected via Tailscale VPN, with local or remote server selection from the login screen.",
+          "Scale Integration: Real-time communication with industrial scales via serial port (SerialPort), streaming weight data directly into the system through Socket.IO.",
+          "Direct Ticket Printing: Tickets generated as images (PNG.js) and printed RAW without drivers from Electron, both locally and on branch servers.",
+          "Standalone Backend with PM2: The NestJS API runs outside Electron as a Windows service, with automated deployment scripts per branch.",
+          "Statistics and Reports: Dashboards with charts (Recharts) and Excel report export (ExcelJS).",
+          "Full CI/CD: GitHub Actions pipeline that builds and publishes the Windows installer (.exe NSIS) on every push to main."
+      ],
+      stack: ["Electron 41", "NestJS 11", "React 19", "Vite 8", "TypeScript", "PostgreSQL", "TypeORM", "Socket.IO", "Tailwind CSS 4", "SerialPort", "PM2", "GitHub Actions"],
+      images: [turinLogin, turinPesada, turinCaja, turinEstadistica],
+      links: { demo: "https://francogianone.com.ar/turin-demo" }
+    },
+    6: {
+      title: "Book Store — Full Stack E-Commerce",
+      fullDesc: "Final project: a full stack (MERN) book e-commerce. The frontend is built with React 19 + Vite and vanilla CSS, while the backend is a REST API in Node.js + Express with MongoDB (Mongoose). It includes a category-based book catalog with search and filters, a persistent global shopping cart with Mercado Pago checkout, JWT authentication with email password recovery via Brevo SMTP, per-user favorites, paid subscriptions with a confirmation webhook, and an admin panel with product CRUD and role-based permissions.",
+      features: [
+          "Category catalog: new releases, best sellers, classics, art, business, sci-fi, tango and comics, served from MongoDB with search and filtering on the home page.",
+          "Global cart with React Context: add/remove products, adjust quantities, subtotal/discount/total calculation, with localStorage persistence.",
+          "Mercado Pago checkout: preference creation from the cart drawer and redirection to the payment flow.",
+          "JWT auth + bcrypt: registration, login, persistent session in localStorage and email password recovery via Nodemailer over Brevo SMTP.",
+          "Favorites and subscriptions: per-user favorites stored in the backend and subscription plans with payment and confirmation webhook.",
+          "Admin panel with roles: full book CRUD for isAdmin users and permission validation (isAdmin / isEmployee)."
+      ],
+      stack: ["React 19", "Vite", "Node.js + Express", "MongoDB + Mongoose", "JWT + Bcrypt", "Nodemailer + Brevo SMTP", "Mercado Pago", "CSS3"],
+      images: [librosPortada, librosCatalogo, librosHome, librosCarrito, librosMp, librosSmtp],
+      links: { github: "https://github.com/francogianone/programacion4", demo: "https://francogianone.com.ar/ecommerce-libros" }
     }
   }
 };
@@ -142,7 +216,7 @@ const projectsExtendedData = {
 
 const ProjectDetails = () => {
   const { id } = useParams();
-  const [lang, setLang] = useState('es'); 
+  const [lang, setLang] = useState(getInitialLang); 
 
   const t = projectsExtendedData[lang]?.[id] || { 
       title: lang === 'en' ? "Project not found" : "Proyecto no encontrado", 
@@ -150,7 +224,11 @@ const ProjectDetails = () => {
       images: [], features: [], stack: [] 
   };
 
-  const toggleLang = () => setLang(prev => prev === 'en' ? 'es' : 'en');
+  const toggleLang = () => setLang(prev => {
+    const next = prev === 'en' ? 'es' : 'en';
+    saveLang(next);
+    return next;
+  });
 
   return (
     <div className="bg-dark text-gray-200 min-h-screen font-sans selection:bg-neon-blue selection:text-black pb-20">
@@ -218,7 +296,7 @@ const ProjectDetails = () => {
                     <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }}
                         className="rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] group"
                     >
-                        <img src={img} alt={`Screenshot ${i}`} className="w-full h-auto group-hover:scale-105 transition duration-700" />
+                        <img src={img} alt={`Screenshot ${i}`} loading="lazy" decoding="async" className="w-full h-auto group-hover:scale-105 transition duration-700" />
                     </motion.div>
                 ))
             ) : (

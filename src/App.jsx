@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
-import { Github, ExternalLink, Linkedin, Instagram, ChevronDown, Send, Mail, User, MessageSquare, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
-import emailjs from '@emailjs/browser'; 
+import { Github, Linkedin, Instagram, ChevronDown, ChevronLeft, ChevronRight, Send, Mail, User, MessageSquare, Phone } from 'lucide-react';
+import emailjs from '@emailjs/browser';
+import CardSwap, { Card } from './components/CardSwap';
+import NetworkBackground from './components/NetworkBackground';
+import { getInitialLang, saveLang } from './language';
+import { scrollToTarget } from './lib/smoothScroll';
 
 import erpDashboard from './assets/erp-dashboard.png';
 import erpStock from './assets/erp-stock.png';
@@ -11,16 +15,26 @@ import erpFactura from './assets/erp-factura.png';
 import ecomHome from './assets/ecom-home.png';
 import ecomCart from './assets/ecom-cart.png';
 import ecomDetail from './assets/ecom-detail.png';
+import ecomStock from './assets/celulares-stock.jpg';
 
-import landHero from './assets/landing-hero.png';
-import landFeature from './assets/landing-feature.png';
-import landMobile from './assets/landing-mobile.png';
+import landHero from './assets/landing-hero.jpg';
+import landFeature from './assets/landing-feature.jpg';
+import landMobile from './assets/landing-mobile.jpg';
 
 import javaMenu from './assets/java-inicio.png';
 import javaHistorial from './assets/java-historial.png';
 import javaGestion from './assets/java-gestion.png';
 import javaProductos from './assets/java-productos.png';
 import javaUbicaciones from './assets/java-ubicaciones.png';
+
+import turinLogin from './assets/turin-login.png';
+import turinPesada from './assets/turin-pesada.jpg';
+import turinCaja from './assets/turin-caja.jpg';
+import turinEstadistica from './assets/turin-estadisticas.jpg';
+
+import librosPortada from './assets/libros-portada.jpg';
+
+import javaPortada from './assets/java-portada.jpg';
 
 const techLogos = {
   react: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg",
@@ -74,6 +88,14 @@ const content = {
     },
     projects: [
       {
+        id: 5,
+        title: "ERP Turin Reciclados",
+        desc: "Multi-branch recycling management system. Electron + NestJS + React, industrial scales via serial port, real-time weighing, and PostgreSQL per branch.",
+        tags: ["Electron", "NestJS", "PostgreSQL"],
+        highlight: true,
+        images: [turinLogin, turinCaja, turinPesada, turinEstadistica]
+      },
+      {
         id: 3,
         title: "Print Shop ERP System",
         desc: "Comprehensive management system. Real-time dashboard, AFIP invoicing, Mercado Pago integration.",
@@ -87,7 +109,7 @@ const content = {
         desc: "Full cart management, stock logic, data persistence, and advanced filtering.",
         tags: ["React", "State Mgmt", "CSS"],
         highlight: false,
-        images: [ecomHome, ecomCart, ecomDetail]
+        images: [ecomStock, ecomHome, ecomCart, ecomDetail]
       },
       {
         id: 2,
@@ -103,7 +125,15 @@ const content = {
         desc: "Desktop logistics management. Physical location control, ACID transactions, and full traceability.",
         tags: ["Java", "Swing", "MySQL"],
         highlight: false,
-        images: [javaMenu, javaHistorial, javaGestion, javaProductos, javaUbicaciones]
+        images: [javaPortada, javaMenu, javaHistorial, javaGestion, javaProductos, javaUbicaciones]
+      },
+      {
+        id: 6,
+        title: "Book Store — E-Commerce",
+        desc: "Full stack final project (MERN): category catalog, cart with Mercado Pago checkout, JWT auth, favorites, subscriptions and admin panel.",
+        tags: ["React", "Express", "MongoDB", "Mercado Pago"],
+        highlight: false,
+        images: [librosPortada]
       }
     ]
   },
@@ -131,6 +161,14 @@ const content = {
     },
     projects: [
       {
+        id: 5,
+        title: "ERP Reciclados Turin",
+        desc: "Sistema de gestión multi-sede para reciclado. Electron + NestJS + React, balanzas por puerto serie, pesaje en tiempo real y PostgreSQL por sede.",
+        tags: ["Electron", "NestJS", "PostgreSQL"],
+        highlight: true,
+        images: [turinLogin, turinCaja, turinPesada, turinEstadistica]
+      },
+      {
         id: 3,
         title: "Sistema ERP para Gráficas",
         desc: "Sistema de gestión integral. Dashboard en tiempo real, facturación AFIP, Mercado Pago.",
@@ -144,7 +182,7 @@ const content = {
         desc: "Gestión completa de carrito, lógica de stock, persistencia y filtrado avanzado.",
         tags: ["React", "State Mgmt", "CSS"],
         highlight: false,
-        images: [ecomHome, ecomCart, ecomDetail]
+        images: [ecomStock, ecomHome, ecomCart, ecomDetail]
       },
       {
         id: 2,
@@ -159,8 +197,16 @@ const content = {
         title: "Sistema WMS Java",
         desc: "Gestión logística de almacenes. Control de ubicaciones físicas, transacciones ACID y trazabilidad.",
         tags: ["Java", "Swing", "MySQL"],
-        highlight: false, 
-        images: [javaMenu, javaHistorial, javaGestion, javaProductos, javaUbicaciones]
+        highlight: false,
+        images: [javaPortada, javaMenu, javaHistorial, javaGestion, javaProductos, javaUbicaciones]
+      },
+      {
+        id: 6,
+        title: "Tienda de Libros — E-Commerce",
+        desc: "Trabajo final full stack (MERN): catálogo por categorías, carrito con checkout de Mercado Pago, auth JWT, favoritos, suscripciones y panel de administración.",
+        tags: ["React", "Express", "MongoDB", "Mercado Pago"],
+        highlight: false,
+        images: [librosPortada]
       }
     ]
   }
@@ -169,60 +215,66 @@ const content = {
 const ProjectCard = ({ project }) => {
     const [currentImg, setCurrentImg] = useState(0);
 
-    const nextImage = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        setCurrentImg((prev) => (prev + 1) % project.images.length);
-    };
-
-    const prevImage = (e) => {
-        e.preventDefault(); e.stopPropagation();
-        setCurrentImg((prev) => (prev - 1 + project.images.length) % project.images.length);
-    };
+    const nextImage = (e) => { e.stopPropagation(); setCurrentImg((p) => (p + 1) % project.images.length); };
+    const prevImage = (e) => { e.stopPropagation(); setCurrentImg((p) => (p - 1 + project.images.length) % project.images.length); };
 
     return (
-        <Link to={`/project/${project.id}`} className="block h-full w-full">
-            <motion.div 
-                whileHover={{ y: -10, scale: 1.02 }}
-                className={`w-[85vw] md:w-[450px] p-6 pb-8 rounded-3xl border ${project.highlight ? 'border-neon-blue/30 bg-gradient-to-br from-white/5 to-neon-blue/5' : 'border-white/10 bg-white/5'} backdrop-blur-sm relative flex flex-col h-full group hover:shadow-[0_0_30px_rgba(0,243,255,0.15)] transition-all duration-300`}
-            >
-                {project.highlight && (
-                    <div className="absolute -top-3 right-8 bg-neon-blue text-black text-xs font-bold px-3 py-1 rounded-full shadow-[0_0_10px_#00f3ff] z-20">MVP</div>
-                )}
-                
-                <h4 className="text-2xl font-bold text-white mb-4 mt-2 group-hover:text-neon-blue transition">{project.title}</h4>
+        <div className="relative h-full w-full flex flex-col">
+            {project.highlight && (
+                <div className="absolute top-5 right-5 bg-neon-blue text-black text-xs font-bold px-3 py-1 rounded-full shadow-[0_0_12px_#00f3ff] z-30">MVP</div>
+            )}
 
-                <div className="relative w-full h-48 rounded-xl overflow-hidden mb-5 group/image bg-black/40 shadow-inner">
-                    <img src={project.images[currentImg]} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2 rounded-full opacity-0 group-hover/image:opacity-100 transition z-30 pointer-events-auto"><ChevronLeft size={18} /></button>
-                    <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2 rounded-full opacity-0 group-hover/image:opacity-100 transition z-30 pointer-events-auto"><ChevronRight size={18} /></button>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
-                        {project.images.map((_, i) => (
-                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === currentImg ? 'bg-neon-blue' : 'bg-white/50'}`} />
-                        ))}
+            <div className="relative flex-1 min-h-0 overflow-hidden bg-black/40">
+                {project.images.length > 0 ? (
+                    <>
+                        <img src={project.images[currentImg]} alt={project.title} loading="lazy" decoding="async" draggable={false} className="w-full h-full object-cover" />
+                        {project.images.length > 1 && (
+                            <>
+                                <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronLeft size={22} /></button>
+                                <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronRight size={22} /></button>
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                                    {project.images.map((_, i) => (
+                                        <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImg(i); }} className={`w-2 h-2 rounded-full transition ${i === currentImg ? 'bg-neon-blue' : 'bg-white/40 hover:bg-white/70'}`} />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </>
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-neon-blue font-mono text-sm tracking-widest">Screenshots soon</span>
                     </div>
-                </div>
+                )}
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+            </div>
 
-                <p className="text-gray-400 mb-6 leading-relaxed text-sm flex-grow">{project.desc}</p>
-                
-                <div className="flex flex-wrap gap-2 mt-auto">
+            <div className="p-8">
+                <h4 className="text-2xl font-bold text-white mb-3">{project.title}</h4>
+                <p className="text-gray-400 text-sm leading-relaxed mb-5 line-clamp-3">{project.desc}</p>
+                <div className="flex flex-wrap gap-2">
                     {project.tags.map((tag, i) => (
-                    <span key={i} className="text-xs font-mono text-neon-blue bg-neon-blue/10 border border-neon-blue/20 px-2 py-1 rounded">{tag}</span>
+                        <span key={i} className="text-[11px] font-mono text-neon-blue bg-neon-blue/10 border border-neon-blue/20 px-2.5 py-1 rounded">{tag}</span>
                     ))}
                 </div>
-                
-                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition text-neon-blue"><ExternalLink size={20} /></div>
-            </motion.div>
-        </Link>
+            </div>
+        </div>
     );
 };
 
 
 function App() {
-  const [lang, setLang] = useState('es');
+  const [lang, setLang] = useState(getInitialLang);
   const [showScrollArrow, setShowScrollArrow] = useState(true);
   const t = content[lang];
-  const scrollRef = useRef(null);
-  
+  const navigate = useNavigate();
+  const swapRef = useRef(null);
+  // El contador se actualiza por ref (sin estado): cada rotación del mazo
+  // no dispara un re-render de toda la home.
+  const counterRef = useRef(null);
+  const frontIndexRef = useRef(0);
+  const projectsRef = useRef(t.projects);
+  projectsRef.current = t.projects;
+
   const form = useRef();
   const [buttonState, setButtonState] = useState('idle'); 
 
@@ -254,22 +306,29 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Al cambiar de idioma, re-sincronizar el contador con la card frontal actual
   useEffect(() => {
-    const el = scrollRef.current;
-    if (el) {
-      const onWheel = (e) => {
-        if (e.deltaY === 0) return;
-        if (el.scrollWidth > el.clientWidth) {
-            e.preventDefault();
-            el.scrollTo({ left: el.scrollLeft + e.deltaY * 2.5, behavior: "smooth" });
-        }
-      };
-      el.addEventListener("wheel", onWheel);
-      return () => el.removeEventListener("wheel", onWheel);
+    if (counterRef.current) {
+      counterRef.current.textContent = `${frontIndexRef.current + 1} / ${t.projects.length}`;
     }
-  }, []);
+  }, [lang]);
 
-  const toggleLang = () => setLang(prev => prev === 'en' ? 'es' : 'en');
+  const toggleLang = () => setLang(prev => {
+    const next = prev === 'en' ? 'es' : 'en';
+    saveLang(next);
+    return next;
+  });
+
+  // Al volver de la página de un proyecto: traer esa card al frente del mazo
+  useEffect(() => {
+    const lastId = Number(sessionStorage.getItem('lastOpenedProject'));
+    if (!lastId) return;
+    const idx = t.projects.findIndex((p) => p.id === lastId);
+    if (idx !== -1) {
+      swapRef.current?.bringToFront(idx);
+    }
+    sessionStorage.removeItem('lastOpenedProject');
+  }, [t.projects]);
 
   return (
     <div className="bg-dark text-gray-200 min-h-screen font-sans overflow-x-hidden selection:bg-neon-blue selection:text-black">
@@ -281,19 +340,7 @@ function App() {
       </nav>
 
       <section className="min-h-screen flex flex-col justify-center items-center px-6 relative text-center overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none"></div>
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <motion.div 
-                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                className="w-[500px] h-[500px] bg-neon-blue/20 rounded-full blur-[120px] absolute" 
-            />
-            <motion.div 
-                animate={{ x: [-50, 50, -50], y: [-30, 30, -30], opacity: [0.1, 0.3, 0.1] }}
-                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-                className="w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px] absolute" 
-            />
-        </div>
+        <NetworkBackground />
 
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="max-w-3xl z-10 relative">
           <h2 className="text-neon-blue tracking-[0.2em] text-sm mb-6 uppercase font-bold">{t.portfolioLabel}</h2>
@@ -304,17 +351,27 @@ function App() {
 
         <AnimatePresence>
           {showScrollArrow && (
-            <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1, y: [0, 10, 0] }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} 
-                className="absolute bottom-10 text-neon-blue z-20 pointer-events-none"
+            <motion.button
+                type="button"
+                onClick={() => scrollToTarget(document.getElementById('tecnologias'))}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}
+                whileHover={{ scale: 1.2 }}
+                className="absolute bottom-10 text-neon-blue hover:text-white z-20 cursor-pointer transition-colors"
+                aria-label={lang === 'en' ? 'Scroll down to tech stack' : 'Bajar a tecnologías'}
             >
-                <ChevronDown size={32} />
-            </motion.div>
+                <motion.span
+                    className="block"
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                    <ChevronDown size={32} />
+                </motion.span>
+            </motion.button>
           )}
         </AnimatePresence>
       </section>
 
-      <section className="py-32 bg-dark-lighter/50">
+      <section id="tecnologias" className="py-32 bg-dark-lighter/50">
         <div className="container mx-auto px-6 max-w-6xl text-center">
           <h3 className="text-2xl font-bold mb-12 inline-block border-b-4 border-neon-blue pb-2 text-white">{t.techTitle}</h3>
           <div className="flex flex-wrap justify-center gap-8 md:gap-12">
@@ -330,20 +387,62 @@ function App() {
         </div>
       </section>
 
-      <section className="py-20 overflow-hidden relative">
-        <div className="container mx-auto px-6 max-w-6xl text-center md:text-left">
-           <h3 className="text-3xl font-bold text-white inline-block md:block md:border-l-4 md:border-neon-blue md:pl-6">{t.projectsTitle}</h3>
+      <section className="pt-20 pb-10 overflow-hidden relative">
+        <div className="relative z-20 text-center px-6">
+          <h3 className="text-3xl md:text-4xl font-bold text-white mb-2">{t.projectsTitle}</h3>
+          <p className="text-gray-500 text-sm font-mono">▹ {lang === 'en' ? 'Use the mouse wheel over a card to rotate' : 'Usá la rueda del mouse sobre una card para rotar'} ▸</p>
         </div>
-        <div ref={scrollRef} className="flex px-6 py-16 gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-hide cursor-grab active:cursor-grabbing w-full">
-          {t.projects.map((project) => (
-            <div key={project.id} className="snap-center shrink-0 first:ml-auto last:mr-auto">
-                 <ProjectCard project={project} />
-            </div>
-          ))}
+
+        <div className="relative z-0 pt-80">
+          <CardSwap
+            ref={swapRef}
+            width="min(94vw, 1300px)"
+            height="min(84vh, 780px)"
+            cardDistance={115}
+            verticalDistance={60}
+            easing="elastic"
+            skewAmount={4}
+            onCardClick={(idx) => {
+              sessionStorage.setItem('lastOpenedProject', String(t.projects[idx].id));
+              navigate(`/project/${t.projects[idx].id}`);
+            }}
+            onFrontChange={(idx) => {
+              frontIndexRef.current = idx;
+              if (counterRef.current) {
+                counterRef.current.textContent = `${idx + 1} / ${projectsRef.current.length}`;
+              }
+            }}
+          >
+            {t.projects.map((project) => (
+              <Card key={project.id}>
+                <ProjectCard project={project} />
+              </Card>
+            ))}
+          </CardSwap>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center gap-4 mt-20">
+          <button
+            onClick={() => swapRef.current?.prev()}
+            className="bg-black/50 border border-white/10 hover:border-neon-blue/60 hover:bg-white/10 text-white p-3 rounded-full transition"
+            aria-label={lang === 'en' ? 'Previous' : 'Anterior'}
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <span ref={counterRef} className="font-mono text-sm text-gray-500">
+            {`1 / ${t.projects.length}`}
+          </span>
+          <button
+            onClick={() => swapRef.current?.next()}
+            className="bg-black/50 border border-white/10 hover:border-neon-blue/60 hover:bg-white/10 text-white p-3 rounded-full transition"
+            aria-label={lang === 'en' ? 'Next' : 'Siguiente'}
+          >
+            <ChevronRight size={22} />
+          </button>
         </div>
       </section>
 
-      <section className="py-32 bg-gradient-to-b from-transparent to-black/80">
+      <section className="mt-32 py-32 bg-gradient-to-b from-transparent to-black/80">
         <div className="container mx-auto px-6 max-w-5xl">
           <h3 className="text-3xl font-bold text-white mb-12 text-center md:text-left md:border-l-4 md:border-neon-blue md:pl-6">{t.contactTitle}</h3>
           

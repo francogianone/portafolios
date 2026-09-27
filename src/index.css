@@ -16,7 +16,33 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-main);
   font-family: 'Inter', sans-serif;
-  overflow-x: hidden;
+  /* clip en vez de hidden: no crea contenedor de scroll y no rompe Lenis */
+  overflow-x: clip;
+}
+
+/* Lenis smooth scroll (clases que aplica la librería) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Ocultar la scrollbar nativa: queda solo la barra neón personalizada */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 .bg-dark { background-color: var(--bg-dark); }
