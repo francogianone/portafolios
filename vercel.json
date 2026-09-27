@@ -3,6 +3,8 @@
     { "source": "/turin-demo", "destination": "https://turinreciclados.francogianone.com.ar/turin-demo/" },
     { "source": "/turin-demo/:path*", "destination": "https://turinreciclados.francogianone.com.ar/turin-demo/:path*" },
     { "source": "/dc-demo", "destination": "https://dcdigital.francogianone.com.ar/dc-demo/" },
-    { "source": "/dc-demo/:path*", "destination": "https://dcdigital.francogianone.com.ar/dc-demo/:path*" }
+    { "source": "/dc-demo/:path*", "destination": "https://dcdigital.francogianone.com.ar/dc-demo/:path*" },
+    { "source": "/ecommerce-libros", "destination": "https://libros.francogianone.com.ar/ecommerce-libros/" },
+    { "source": "/ecommerce-libros/:path*", "destination": "https://libros.francogianone.com.ar/ecommerce-libros/:path*" }
   ]
 }
