@@ -16,11 +16,11 @@ export const Card = forwardRef(({ customClass, ...rest }, ref) => {
   // evita tormentas de tweens cuando las cards pasan bajo el cursor durante la rotación.
   const handleEnter = (e) => {
     if (!e.currentTarget.classList.contains('card-front')) return;
-    gsap.to(e.currentTarget, { scale: 1.03, duration: 0.25, ease: 'power2.out' });
+    gsap.to(e.currentTarget, { scale: 1.03, duration: 0.15, ease: 'power3.out', overwrite: 'auto' });
   };
   const handleLeave = (e) => {
     if (!e.currentTarget.classList.contains('card-front')) return;
-    gsap.to(e.currentTarget, { scale: 1, duration: 0.25, ease: 'power2.out' });
+    gsap.to(e.currentTarget, { scale: 1, duration: 0.15, ease: 'power3.out', overwrite: 'auto' });
   };
   const className = `card ${customClass ?? ''} ${rest.className ?? ''}`.trim();
   return <div ref={ref} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...rest} className={className} />;
