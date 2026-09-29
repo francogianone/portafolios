@@ -7,6 +7,10 @@ import './CardSwap.css';
 // para que el mazo se vea igual en cualquier resolución/zoom de navegador.
 const DESIGN_WIDTH = 1300;
 
+// Delta estándar de una notcha de rueda (px). Las notchas se acumulan y cada
+// una equivale a un paso del mazo: nada se descarta por throttle.
+const WHEEL_NOTCH = 100;
+
 export const Card = forwardRef(({ customClass, ...rest }, ref) => {
   // El efecto hover (escala + glow) solo aplica a la card frontal:
   // evita tormentas de tweens cuando las cards pasan bajo el cursor durante la rotación.
@@ -32,7 +36,6 @@ const CardSwap = forwardRef(
       verticalDistance = 45,
       skewAmount = 4,
       easing = 'elastic',
-      wheelThrottle = 180,
       onCardClick,
       onFrontChange,
       children
@@ -49,7 +52,8 @@ const CardSwap = forwardRef(
     );
     const order = useRef(Array.from({ length: childArr.length }, (_, i) => i));
     const container = useRef(null);
-    const lastWheel = useRef(0);
+    // Acumulador de delta de rueda: suma las notchas y emite un paso por notcha.
+    const wheelAcc = useRef(0);
     // Distancias escaladas al ancho real del contenedor (las actualiza el ResizeObserver)
     const metrics = useRef({ dx: cardDistance, dy: verticalDistance });
 
@@ -96,7 +100,6 @@ const CardSwap = forwardRef(
           gsap.set(el, { x: s.x, y: s.y, z: s.z });
         }
       });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refs, ease, skewAmount]);
 
     const animateTo = useCallback((newOrder) => {
@@ -164,16 +167,29 @@ const CardSwap = forwardRef(
       if (!el) return;
       const onWheel = (e) => {
         e.preventDefault();
-        if (Math.abs(e.deltaY) < 5) return;
-        const now = Date.now();
-        if (now - lastWheel.current < wheelThrottle) return;
-        lastWheel.current = now;
-        if (e.deltaY > 0) next();
-        else prev();
+        // Normaliza deltaMode: Firefox reporta líneas (1) o páginas (2), no píxeles
+        const d = e.deltaMode === 1
+          ? e.deltaY * (WHEEL_NOTCH / 3)
+          : e.deltaMode === 2
+            ? e.deltaY * WHEEL_NOTCH
+            : e.deltaY;
+        if (Math.abs(d) < 2) return;
+        wheelAcc.current += d;
+        // Cada notcha acumulada = un paso del mazo, con retarget inmediato:
+        // ninguna notcha se descarta (ráfagas rápidas avanzan todas las cards).
+        while (Math.abs(wheelAcc.current) >= WHEEL_NOTCH) {
+          const dir = Math.sign(wheelAcc.current);
+          wheelAcc.current -= dir * WHEEL_NOTCH;
+          if (dir > 0) next();
+          else prev();
+        }
       };
       el.addEventListener('wheel', onWheel, { passive: false });
-      return () => el.removeEventListener('wheel', onWheel);
-    }, [next, prev, wheelThrottle]);
+      return () => {
+        el.removeEventListener('wheel', onWheel);
+        wheelAcc.current = 0;
+      };
+    }, [next, prev]);
 
     const rendered = childArr.map((child, i) =>
       isValidElement(child)
