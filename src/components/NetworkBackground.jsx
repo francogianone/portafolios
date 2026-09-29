@@ -6,7 +6,11 @@ import { useEffect, useRef } from 'react';
  * - Al mover el mouse por la sección: los nodos cercanos al cursor se "encienden"
  *   y se conectan entre sí, dejando un rastro de red que se desvanece al pasar.
  *   El cursor además traza líneas hacia los nodos cercanos y los repele suavemente.
- * - Optimizado: respeta prefers-reduced-motion y pausa cuando la sección no es visible.
+ * - Optimizado para PCs de gama baja: la cantidad de nodos, el DPR y el límite de
+ *   FPS se adaptan al hardware (núcleos de CPU / memoria del dispositivo).
+ *   Pausa cuando la sección no es visible.
+ * - Ya NO se apaga con prefers-reduced-motion: la experiencia es idéntica en
+ *   todas las PCs (decisión de producto); solo cambia la calidad adaptativa.
  */
 const NetworkBackground = ({ className = '' }) => {
   const canvasRef = useRef(null);
@@ -17,9 +21,17 @@ const NetworkBackground = ({ className = '' }) => {
     const ctx = canvas.getContext('2d');
     const parent = canvas.parentElement;
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // --- Sondeo de capacidad del equipo (una sola vez) ---
+    const cores = navigator.hardwareConcurrency || 2;
+    let tier = 1;
+    if (cores >= 8) tier = 1;
+    else if (cores >= 6) tier = 0.85;
+    else if (cores >= 4) tier = 0.7;
+    else tier = 0.45;
+    if (navigator.deviceMemory && navigator.deviceMemory <= 2) tier *= 0.75;
 
+    const MAX_NODES = 170;
+    const BASE_DENSITY = 9000; // px² de canvas por nodo en un equipo potente
     const LINK_DIST = 150;   // distancia máxima para conectar nodos
     const MOUSE_DIST = 220;  // radio de conexión con el mouse
     const MOUSE_REPEL = 110; // radio de repulsión del mouse
@@ -27,18 +39,25 @@ const NetworkBackground = ({ className = '' }) => {
     const LINK_DIST_SQ = LINK_DIST * LINK_DIST;
     const MOUSE_DIST_SQ = MOUSE_DIST * MOUSE_DIST;
     const MOUSE_REPEL_SQ = MOUSE_REPEL * MOUSE_REPEL;
+    // En equipos muy flojos, dibujar a ~30fps (mitad de costo, se ve igual de fluido)
+    const FRAME_MIN_MS = tier < 0.6 ? 33 : 0;
 
     let width = 0;
     let height = 0;
     let nodes = [];
     let raf = null;
     let visible = true;
+    let lastFrame = 0;
+    let rect = null;
     const mouse = { x: -9999, y: -9999 };
 
     const rand = (min, max) => Math.random() * (max - min) + min;
 
     const spawnNodes = () => {
-      const count = Math.min(Math.floor((width * height) / 9000), 170);
+      const count = Math.min(
+        Math.floor((width * height) / (BASE_DENSITY / tier)),
+        MAX_NODES
+      );
       nodes = [];
       // Clústeres para imitar la referencia: red densa a la izquierda, dispersión hacia los bordes
       const clusters = [
@@ -72,16 +91,8 @@ const NetworkBackground = ({ className = '' }) => {
       }
     };
 
-    const drawFrame = (staticFrame = false) => {
+    const drawFrame = () => {
       ctx.clearRect(0, 0, width, height);
-
-      if (staticFrame) {
-        // Modo estático (prefers-reduced-motion): encender solo los nodos cerca del mouse
-        for (const n of nodes) {
-          const d = Math.hypot(n.x - mouse.x, n.y - mouse.y);
-          n.energy = d < MOUSE_DIST ? 1 : n.energy * 0.975;
-        }
-      }
 
       // conexiones entre nodos: SOLO entre nodos con energía (encendidos por el paso del mouse).
       // Cada conexión usa la energía mínima del par, así el rastro se desvanece nodo a nodo.
@@ -135,8 +146,6 @@ const NetworkBackground = ({ className = '' }) => {
         ctx.fill();
       }
 
-      if (staticFrame) return;
-
       // movimiento
       for (const n of nodes) {
         // repulsión suave del mouse + activación por cercanía
@@ -171,22 +180,30 @@ const NetworkBackground = ({ className = '' }) => {
     const resize = () => {
       width = parent.clientWidth;
       height = parent.clientHeight;
+      // DPR más bajo en equipos flojos: menos píxeles que llenar en cada frame
+      const dpr = Math.min(window.devicePixelRatio || 1, tier >= 0.7 ? 2 : 1.25);
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       spawnNodes();
-      if (reducedMotion) drawFrame(true);
+      rect = null;
     };
 
-    const loop = () => {
-      if (visible) drawFrame();
+    const loop = (t) => {
       raf = requestAnimationFrame(loop);
+      if (FRAME_MIN_MS && t - lastFrame < FRAME_MIN_MS) return;
+      lastFrame = t;
+      if (visible) drawFrame();
     };
+
+    // El rect del canvas se cachea: leerlo en cada mousemove fuerza layout.
+    // Se invalida al hacer scroll o resize.
+    const updateRect = () => { rect = canvas.getBoundingClientRect(); };
 
     const onMouseMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
+      if (!rect) updateRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
@@ -210,19 +227,17 @@ const NetworkBackground = ({ className = '' }) => {
     observer.observe(canvas);
 
     resize();
+    updateRect();
     window.addEventListener('resize', resize);
+    window.addEventListener('scroll', updateRect, { passive: true });
     window.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseleave', onMouseLeave);
-
-    if (reducedMotion) {
-      drawFrame(true);
-    } else {
-      raf = requestAnimationFrame(loop);
-    }
+    raf = requestAnimationFrame(loop);
 
     return () => {
       if (raf) cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', updateRect);
       window.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseleave', onMouseLeave);
       observer.disconnect();

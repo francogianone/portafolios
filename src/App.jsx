@@ -248,8 +248,8 @@ const ProjectCard = ({ project }) => {
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
             </div>
 
-            <div className="p-8">
-                <h4 className="text-2xl font-bold text-white mb-3">{project.title}</h4>
+            <div className="p-5 md:p-8">
+                <h4 className="text-xl md:text-2xl font-bold text-white mb-3">{project.title}</h4>
                 <p className="text-gray-400 text-sm leading-relaxed mb-5 line-clamp-3">{project.desc}</p>
                 <div className="flex flex-wrap gap-2">
                     {project.tags.map((tag, i) => (
@@ -336,7 +336,7 @@ function App() {
       <motion.div className="fixed top-0 right-0 bottom-0 w-[2px] bg-neon-blue origin-top z-50 shadow-[0_0_15px_#00f3ff]" style={{ scaleY }} />
 
       <nav className="fixed top-6 right-8 z-40">
-        <button onClick={toggleLang} className="backdrop-blur-md bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 hover:border-neon-blue/50 transition flex items-center gap-2 text-xs font-bold tracking-widest text-white">{t.toggle}</button>
+        <button onClick={toggleLang} className="bg-white/10 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 hover:border-neon-blue/50 transition flex items-center gap-2 text-xs font-bold tracking-widest text-white">{t.toggle}</button>
       </nav>
 
       <section className="min-h-screen flex flex-col justify-center items-center px-6 relative text-center overflow-hidden">
@@ -393,11 +393,11 @@ function App() {
           <p className="text-gray-500 text-sm font-mono">▹ {lang === 'en' ? 'Use the mouse wheel over a card to rotate' : 'Usá la rueda del mouse sobre una card para rotar'} ▸</p>
         </div>
 
-        <div className="relative z-0 pt-80">
+        <div className="relative z-0 pt-40 md:pt-80">
           <CardSwap
             ref={swapRef}
             width="min(94vw, 1300px)"
-            height="min(84vh, 780px)"
+            height="min(max(58vw, 560px), 780px)"
             cardDistance={115}
             verticalDistance={60}
             easing="elastic"

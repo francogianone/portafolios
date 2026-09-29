@@ -236,7 +236,7 @@ const ProjectDetails = () => {
 
       <nav className="fixed top-6 left-8 z-40">
         <Link to="/">
-            <button className="backdrop-blur-md bg-black/50 border border-white/10 px-4 py-2 rounded-full hover:border-neon-blue/50 transition flex items-center gap-2 text-sm text-white font-bold group">
+            <button className="bg-black/70 border border-white/10 px-4 py-2 rounded-full hover:border-neon-blue/50 transition flex items-center gap-2 text-sm text-white font-bold group">
             <ArrowLeft size={18} className="text-neon-blue group-hover:-translate-x-1 transition" /> 
             {lang === 'en' ? "Back" : "Volver"}
             </button>
@@ -245,7 +245,7 @@ const ProjectDetails = () => {
 
 
       <nav className="fixed top-6 right-8 z-40">
-        <button onClick={toggleLang} className="backdrop-blur-md bg-white/5 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 hover:border-neon-blue/50 transition flex items-center gap-2 text-xs font-bold tracking-widest text-white">
+        <button onClick={toggleLang} className="bg-white/10 border border-white/10 px-4 py-2 rounded-full hover:bg-white/10 hover:border-neon-blue/50 transition flex items-center gap-2 text-xs font-bold tracking-widest text-white">
             {lang === 'en' ? "ES" : "EN"}
         </button>
       </nav>

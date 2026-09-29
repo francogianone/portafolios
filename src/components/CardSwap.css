@@ -21,10 +21,13 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 
-  transition: border-color 0.3s, box-shadow 0.3s;
+  /* Solo transición del borde (pintura mínima). El glow de hover se aplica sin
+     transición y solo en la card frontal: animar box-shadow repinta el borde en
+     cada frame y es muy caro en GPUs flojas / render por software. */
+  transition: border-color 0.3s;
 }
 
-.card:hover,
+/* Glow de hover únicamente en la card frontal (sin transición de box-shadow) */
 .card.card-front:hover {
   border-color: rgba(0, 243, 255, 0.7);
   box-shadow: 0 20px 60px rgba(0, 243, 255, 0.28);

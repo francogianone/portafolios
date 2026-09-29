@@ -2,6 +2,11 @@ import React, { Children, cloneElement, forwardRef, isValidElement, useCallback,
 import gsap from 'gsap';
 import './CardSwap.css';
 
+// Ancho de diseño de referencia: cardDistance/verticalDistance se especifican
+// para este ancho y se escalan proporcionalmente al ancho real del contenedor,
+// para que el mazo se vea igual en cualquier resolución/zoom de navegador.
+const DESIGN_WIDTH = 1300;
+
 export const Card = forwardRef(({ customClass, ...rest }, ref) => {
   // El efecto hover (escala + glow) solo aplica a la card frontal:
   // evita tormentas de tweens cuando las cards pasan bajo el cursor durante la rotación.
@@ -17,13 +22,6 @@ export const Card = forwardRef(({ customClass, ...rest }, ref) => {
   return <div ref={ref} onMouseEnter={handleEnter} onMouseLeave={handleLeave} {...rest} className={className} />;
 });
 Card.displayName = 'Card';
-
-const makeSlot = (i, distX, distY, total) => ({
-  x: i * distX,
-  y: -i * distY,
-  z: -i * distX * 0.7,
-  zIndex: total - i
-});
 
 const CardSwap = forwardRef(
   (
@@ -52,28 +50,60 @@ const CardSwap = forwardRef(
     const order = useRef(Array.from({ length: childArr.length }, (_, i) => i));
     const container = useRef(null);
     const lastWheel = useRef(0);
+    // Distancias escaladas al ancho real del contenedor (las actualiza el ResizeObserver)
+    const metrics = useRef({ dx: cardDistance, dy: verticalDistance });
 
-    const animateTo = useCallback(
-      (newOrder) => {
-        newOrder.forEach((cardIdx, slotIdx) => {
-          const el = refs[cardIdx]?.current;
-          if (!el) return;
-          const s = makeSlot(slotIdx, cardDistance, verticalDistance, refs.length);
-          gsap.set(el, { zIndex: s.zIndex });
-          // Solo la card frontal mantiene el hover; las demás se resetean (auto-sanitiza el scale)
-          if (slotIdx === 0) {
-            el.classList.add('card-front');
-          } else {
-            el.classList.remove('card-front');
-            gsap.set(el, { scale: 1 });
-          }
-          gsap.to(el, { x: s.x, y: s.y, z: s.z, duration: 0.6, ease, overwrite: 'auto' });
-        });
-        order.current = newOrder;
-        onFrontChange?.(newOrder[0]);
-      },
-      [cardDistance, verticalDistance, ease, refs, onFrontChange]
-    );
+    const makeSlot = (i, total) => ({
+      x: i * metrics.current.dx,
+      y: -i * metrics.current.dy,
+      z: -i * metrics.current.dx * 0.7,
+      zIndex: total - i
+    });
+
+    /**
+     * Coloca las cards según `list` (orden de slots).
+     * - animate=false: colocación instantánea (montaje o resize).
+     * - base=true: además fija xPercent/yPercent/skewY (solo montaje inicial).
+     */
+    const place = useCallback((list, opts = {}) => {
+      const { animate = true, duration = 0.6, ease: tweenEase = ease, base = false } = opts;
+      list.forEach((cardIdx, slotIdx) => {
+        const el = refs[cardIdx]?.current;
+        if (!el) return;
+        const s = makeSlot(slotIdx, refs.length);
+        gsap.set(el, { zIndex: s.zIndex });
+        // Solo la card frontal mantiene el hover; las demás se resetean (auto-sanitiza el scale)
+        if (slotIdx === 0) {
+          el.classList.add('card-front');
+        } else {
+          el.classList.remove('card-front');
+          gsap.set(el, { scale: 1 });
+        }
+        if (animate) {
+          gsap.to(el, { x: s.x, y: s.y, z: s.z, duration, ease: tweenEase, overwrite: 'auto' });
+        } else if (base) {
+          gsap.set(el, {
+            x: s.x,
+            y: s.y,
+            z: s.z,
+            xPercent: -50,
+            yPercent: -50,
+            skewY: skewAmount,
+            transformOrigin: 'center center',
+            force3D: true
+          });
+        } else {
+          gsap.set(el, { x: s.x, y: s.y, z: s.z });
+        }
+      });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [refs, ease, skewAmount]);
+
+    const animateTo = useCallback((newOrder) => {
+      place(newOrder, { animate: true });
+      order.current = newOrder;
+      onFrontChange?.(newOrder[0]);
+    }, [place, onFrontChange]);
 
     const next = useCallback(() => {
       const o = [...order.current];
@@ -100,26 +130,34 @@ const CardSwap = forwardRef(
       }
     }), [next, prev, animateTo]);
 
+    // Colocación inicial (con las props base de transform)
     useEffect(() => {
-      order.current.forEach((cardIdx, slotIdx) => {
-        const el = refs[cardIdx]?.current;
-        if (!el) return;
-        const s = makeSlot(slotIdx, cardDistance, verticalDistance, refs.length);
-        el.classList.toggle('card-front', slotIdx === 0);
-        gsap.set(el, {
-          x: s.x,
-          y: s.y,
-          z: s.z,
-          xPercent: -50,
-          yPercent: -50,
-          skewY: skewAmount,
-          transformOrigin: 'center center',
-          zIndex: s.zIndex,
-          force3D: true
-        });
-      });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cardDistance, verticalDistance, skewAmount, childArr.length]);
+      place(order.current, { animate: false, base: true });
+    }, [childArr.length, place]);
+
+    // Medición del contenedor: escala las distancias al ancho real.
+    // Así el mazo no se deforma ni desborda en un monitor 4K, una notebook
+    // 1366x768 o con el zoom del navegador cambiado.
+    useEffect(() => {
+      const el = container.current;
+      if (!el) return;
+      let first = true;
+      const measure = () => {
+        const w = el.clientWidth;
+        if (!w) return;
+        const scale = Math.max(0.3, Math.min(1, w / DESIGN_WIDTH));
+        const dx = Math.round(cardDistance * scale);
+        const dy = Math.round(verticalDistance * scale);
+        if (!first && metrics.current.dx === dx && metrics.current.dy === dy) return;
+        metrics.current = { dx, dy };
+        place(order.current, first ? { animate: false } : { animate: true, duration: 0.3, ease: 'power2.out' });
+        first = false;
+      };
+      measure();
+      const ro = new ResizeObserver(measure);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }, [cardDistance, verticalDistance, place]);
 
     useEffect(() => {
       const el = container.current;
