@@ -69,7 +69,7 @@ const ProjectCardsMobile = forwardRef(({ projects, onOpen }, ref) => {
                 onClick={handleTap(i)}
                 className="relative w-full max-w-[520px] h-[560px] rounded-[20px] border border-neon-blue/30 bg-gradient-to-br from-[#0a0f14] to-[#05080b] shadow-[0_10px_40px_rgba(0,0,0,0.6)] overflow-hidden cursor-pointer select-none"
               >
-                <ProjectCard project={project} />
+                <ProjectCard project={project} showImageArrows={false} />
               </div>
             </div>
           ))}

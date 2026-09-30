@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
  * descripción y tags. Es agnóstica del contenedor: la usan el mazo 3D
  * (desktop) y el carrusel mobile por igual.
  */
-const ProjectCard = ({ project }) => {
+const ProjectCard = ({ project, showImageArrows = true }) => {
     const [currentImg, setCurrentImg] = useState(0);
 
     const nextImage = (e) => { e.stopPropagation(); setCurrentImg((p) => (p + 1) % project.images.length); };
@@ -24,8 +24,12 @@ const ProjectCard = ({ project }) => {
                         <img src={project.images[currentImg]} alt={project.title} loading="lazy" decoding="async" draggable={false} className="w-full h-full object-cover" />
                         {project.images.length > 1 && (
                             <>
-                                <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronLeft size={22} /></button>
-                                <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronRight size={22} /></button>
+                                {showImageArrows && (
+                                    <>
+                                        <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronLeft size={22} /></button>
+                                        <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronRight size={22} /></button>
+                                    </>
+                                )}
                                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
                                     {project.images.map((_, i) => (
                                         <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImg(i); }} className={`w-2 h-2 rounded-full transition ${i === currentImg ? 'bg-neon-blue' : 'bg-white/40 hover:bg-white/70'}`} />
