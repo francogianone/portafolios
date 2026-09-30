@@ -5,6 +5,9 @@ import { Github, Linkedin, Instagram, ChevronDown, ChevronLeft, ChevronRight, Se
 import emailjs from '@emailjs/browser';
 import CardSwap, { Card } from './components/CardSwap';
 import NetworkBackground from './components/NetworkBackground';
+import ProjectCard from './components/ProjectCard';
+import ProjectCardsMobile from './components/ProjectCardsMobile';
+import useIsMobile from './lib/useIsMobile';
 import { getInitialLang, saveLang } from './language';
 import { scrollToTarget } from './lib/smoothScroll';
 
@@ -212,54 +215,7 @@ const content = {
   }
 };
 
-const ProjectCard = ({ project }) => {
-    const [currentImg, setCurrentImg] = useState(0);
 
-    const nextImage = (e) => { e.stopPropagation(); setCurrentImg((p) => (p + 1) % project.images.length); };
-    const prevImage = (e) => { e.stopPropagation(); setCurrentImg((p) => (p - 1 + project.images.length) % project.images.length); };
-
-    return (
-        <div className="relative h-full w-full flex flex-col">
-            {project.highlight && (
-                <div className="absolute top-5 right-5 bg-neon-blue text-black text-xs font-bold px-3 py-1 rounded-full shadow-[0_0_12px_#00f3ff] z-30">MVP</div>
-            )}
-
-            <div className="relative flex-1 min-h-0 overflow-hidden bg-black/40">
-                {project.images.length > 0 ? (
-                    <>
-                        <img src={project.images[currentImg]} alt={project.title} loading="lazy" decoding="async" draggable={false} className="w-full h-full object-cover" />
-                        {project.images.length > 1 && (
-                            <>
-                                <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronLeft size={22} /></button>
-                                <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-neon-blue hover:text-black text-white p-2.5 rounded-full transition z-30"><ChevronRight size={22} /></button>
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                                    {project.images.map((_, i) => (
-                                        <button key={i} onClick={(e) => { e.stopPropagation(); setCurrentImg(i); }} className={`w-2 h-2 rounded-full transition ${i === currentImg ? 'bg-neon-blue' : 'bg-white/40 hover:bg-white/70'}`} />
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </>
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-neon-blue font-mono text-sm tracking-widest">Screenshots soon</span>
-                    </div>
-                )}
-                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
-            </div>
-
-            <div className="p-5 md:p-8">
-                <h4 className="text-xl md:text-2xl font-bold text-white mb-3">{project.title}</h4>
-                <p className="text-gray-400 text-sm leading-relaxed mb-5 line-clamp-3">{project.desc}</p>
-                <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag, i) => (
-                        <span key={i} className="text-[11px] font-mono text-neon-blue bg-neon-blue/10 border border-neon-blue/20 px-2.5 py-1 rounded">{tag}</span>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
 
 
 function App() {
@@ -267,7 +223,9 @@ function App() {
   const [showScrollArrow, setShowScrollArrow] = useState(true);
   const t = content[lang];
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const swapRef = useRef(null);
+  const mobileDeckRef = useRef(null);
   // El contador se actualiza por ref (sin estado): cada rotación del mazo
   // no dispara un re-render de toda la home.
   const counterRef = useRef(null);
@@ -319,16 +277,18 @@ function App() {
     return next;
   });
 
-  // Al volver de la página de un proyecto: traer esa card al frente del mazo
+  // Al volver de la página de un proyecto: traer esa card al frente (desktop)
+  // o desplazar el carrusel mobile hasta ella.
   useEffect(() => {
     const lastId = Number(sessionStorage.getItem('lastOpenedProject'));
     if (!lastId) return;
     const idx = t.projects.findIndex((p) => p.id === lastId);
     if (idx !== -1) {
-      swapRef.current?.bringToFront(idx);
+      if (isMobile) mobileDeckRef.current?.goToIndex(idx);
+      else swapRef.current?.bringToFront(idx);
     }
     sessionStorage.removeItem('lastOpenedProject');
-  }, [t.projects]);
+  }, [t.projects, isMobile]);
 
   return (
     <div className="bg-dark text-gray-200 min-h-screen font-sans overflow-x-hidden selection:bg-neon-blue selection:text-black">
@@ -390,56 +350,73 @@ function App() {
       <section className="pt-20 pb-10 overflow-hidden relative">
         <div className="relative z-20 text-center px-6">
           <h3 className="text-3xl md:text-4xl font-bold text-white mb-2">{t.projectsTitle}</h3>
-          <p className="text-gray-500 text-sm font-mono">▹ {lang === 'en' ? 'Use the mouse wheel over a card to rotate' : 'Usá la rueda del mouse sobre una card para rotar'} ▸</p>
+          <p className="text-gray-500 text-sm font-mono">▹ {isMobile
+            ? (lang === 'en' ? 'Swipe the card sideways or use the arrows' : 'Deslizá la card a los costados o usá las flechas')
+            : (lang === 'en' ? 'Use the mouse wheel over a card to rotate' : 'Usá la rueda del mouse sobre una card para rotar')} ▸</p>
         </div>
 
-        <div className="relative z-0 pt-40 md:pt-80">
-          <CardSwap
-            ref={swapRef}
-            width="min(94vw, 1300px)"
-            height="min(max(58vw, 560px), 780px)"
-            cardDistance={115}
-            verticalDistance={60}
-            easing="elastic"
-            skewAmount={4}
-            onCardClick={(idx) => {
-              sessionStorage.setItem('lastOpenedProject', String(t.projects[idx].id));
-              navigate(`/project/${t.projects[idx].id}`);
-            }}
-            onFrontChange={(idx) => {
-              frontIndexRef.current = idx;
-              if (counterRef.current) {
-                counterRef.current.textContent = `${idx + 1} / ${projectsRef.current.length}`;
-              }
-            }}
-          >
-            {t.projects.map((project) => (
-              <Card key={project.id}>
-                <ProjectCard project={project} />
-              </Card>
-            ))}
-          </CardSwap>
-        </div>
+        {isMobile ? (
+          <div className="relative z-0 pt-12 px-2">
+            <ProjectCardsMobile
+              ref={mobileDeckRef}
+              projects={t.projects}
+              onOpen={(id) => {
+                sessionStorage.setItem('lastOpenedProject', String(id));
+                navigate(`/project/${id}`);
+              }}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="relative z-0 pt-40 md:pt-80">
+              <CardSwap
+                ref={swapRef}
+                width="min(94vw, 1300px)"
+                height="min(max(58vw, 560px), 780px)"
+                cardDistance={115}
+                verticalDistance={60}
+                easing="elastic"
+                skewAmount={4}
+                onCardClick={(idx) => {
+                  sessionStorage.setItem('lastOpenedProject', String(t.projects[idx].id));
+                  navigate(`/project/${t.projects[idx].id}`);
+                }}
+                onFrontChange={(idx) => {
+                  frontIndexRef.current = idx;
+                  if (counterRef.current) {
+                    counterRef.current.textContent = `${idx + 1} / ${projectsRef.current.length}`;
+                  }
+                }}
+              >
+                {t.projects.map((project) => (
+                  <Card key={project.id}>
+                    <ProjectCard project={project} />
+                  </Card>
+                ))}
+              </CardSwap>
+            </div>
 
-        <div className="relative z-10 flex items-center justify-center gap-4 mt-20">
-          <button
-            onClick={() => swapRef.current?.prev()}
-            className="bg-black/50 border border-white/10 hover:border-neon-blue/60 hover:bg-white/10 text-white p-3 rounded-full transition"
-            aria-label={lang === 'en' ? 'Previous' : 'Anterior'}
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <span ref={counterRef} className="font-mono text-sm text-gray-500">
-            {`1 / ${t.projects.length}`}
-          </span>
-          <button
-            onClick={() => swapRef.current?.next()}
-            className="bg-black/50 border border-white/10 hover:border-neon-blue/60 hover:bg-white/10 text-white p-3 rounded-full transition"
-            aria-label={lang === 'en' ? 'Next' : 'Siguiente'}
-          >
-            <ChevronRight size={22} />
-          </button>
-        </div>
+            <div className="relative z-10 flex items-center justify-center gap-4 mt-20">
+              <button
+                onClick={() => swapRef.current?.prev()}
+                className="bg-black/50 border border-white/10 hover:border-neon-blue/60 hover:bg-white/10 text-white p-3 rounded-full transition"
+                aria-label={lang === 'en' ? 'Previous' : 'Anterior'}
+              >
+                <ChevronLeft size={22} />
+              </button>
+              <span ref={counterRef} className="font-mono text-sm text-gray-500">
+                {`1 / ${t.projects.length}`}
+              </span>
+              <button
+                onClick={() => swapRef.current?.next()}
+                className="bg-black/50 border border-white/10 hover:border-neon-blue/60 hover:bg-white/10 text-white p-3 rounded-full transition"
+                aria-label={lang === 'en' ? 'Next' : 'Siguiente'}
+              >
+                <ChevronRight size={22} />
+              </button>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="mt-32 py-32 bg-gradient-to-b from-transparent to-black/80">
